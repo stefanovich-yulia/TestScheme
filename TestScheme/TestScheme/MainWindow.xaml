@@ -1,0 +1,66 @@
+﻿<Window x:Class="TestScheme.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TestScheme"
+        mc:Ignorable="d"
+        Title="" Height="600" Width="1000"
+        KeyDown="KeyDown_Event">
+
+    <Grid Background="#FFDDE0D5">
+
+        <Canvas x:Name="paintSurface" HorizontalAlignment="Left" Height="503" Margin="179,34,0,0" VerticalAlignment="Top" Width="575" Background="White"
+                PreviewMouseMove="paintSurface_PreviewMouseMove" PreviewMouseDown="paintSurface_PreviewMouseDown" PreviewMouseUp="paintSurface_PreviewMouseUp" />
+
+        <Menu HorizontalAlignment="Left" Margin="10,0,0,541" Width="972">
+            <MenuItem Header="Файл">
+                <MenuItem Header="Создать" ></MenuItem>
+                <MenuItem Header="Открыть" ></MenuItem>
+                <Separator />
+                <MenuItem Header="Выход" ></MenuItem>
+            </MenuItem>
+        </Menu>
+        <Grid HorizontalAlignment="Left" Height="332" Margin="10,34,0,-355" VerticalAlignment="Top" Width="152" Background="White">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50"></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <Rectangle Grid.Row="1" Grid.Column="0" Fill="#FF07C7FF" Margin="3,7,0,7" HorizontalAlignment="Left" Height="30"  VerticalAlignment="Top" Width="50"/>
+            <Button x:Name="btnSource" Content="Источник" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" BorderBrush="{x:Null}" Width="102" Margin="0,4,0,0" Click="btnSource_Click"/>
+            <Rectangle Grid.Row="2" Grid.Column="0" Fill="#FF6D6E60" Margin="3,7,0,7"  HorizontalAlignment="Left" Height="30"  VerticalAlignment="Top" Width="50"/>
+            <Button x:Name="btnPipe" Content="Труба" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="102" BorderBrush="{x:Null}" Margin="0,4,0,0" Click="btnPipe_Click"/>
+            <Rectangle Grid.Row="3" Grid.Column="0" Fill="#FFFF0F30" Margin="3,7,0,7"  HorizontalAlignment="Left" Height="30"  VerticalAlignment="Top" Width="50"/>
+            <Button x:Name="btnHeatExchanger" Content="Теплообменник" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="102" BorderBrush="{x:Null}" Margin="0,4,0,0" Click="btnHeatExchanger_Click"/>
+            <Rectangle Grid.Row="4" Grid.Column="0" Fill="#FFE3E4D1" Margin="3,7,0,7"  HorizontalAlignment="Left" Height="30"  VerticalAlignment="Top" Width="50"/>
+            <Button x:Name="btnFlowing" Content="Сток" Grid.Row="4" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="102" BorderBrush="{x:Null}" Margin="0,4,0,0" Click="btnFlowing_Click"/>
+
+        </Grid>
+
+        <Grid HorizontalAlignment="Left" Height="503" Margin="782,34,0,0" VerticalAlignment="Top" Width="185" Background="White">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Label Content="Свойства" Grid.Row="0" Grid.Column="0"  Grid.ColumnSpan="2"  HorizontalAlignment="Center" VerticalAlignment="Top" Height="29" Margin="0,0,0,-18" Width="92"/>
+        </Grid>
+        <DataGrid HorizontalAlignment="Left" Height="148" Margin="782,73,0,0" VerticalAlignment="Top" Width="185">
+            <DataGrid.Columns>
+                <DataGridTextColumn/>
+                <DataGridComboBoxColumn/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>
