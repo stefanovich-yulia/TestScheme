@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.IO.Packaging;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+
+using TestScheme.DrawingElements;
 
 namespace TestScheme.Schemes.Objects.Elements
 {
@@ -15,58 +15,25 @@ namespace TestScheme.Schemes.Objects.Elements
     {
         #region Const, properties
 
-        public Flow Flow;
+        public Flow Flow { get; set; }
         public int Id { get; set; }
 
-        private const double W = 50 * 1.5;
-        private const double H = 25 * 1.5;
-        private const double R = 5 * 1.5;
-        private readonly SolidColorBrush _connectingEllipseBrush = Brushes.Black;
-        private readonly SolidColorBrush _selectedConnectingEllipseBrush = Brushes.Red;
+        public static readonly SolidColorBrush SelectedConnectingEllipseBrush = Brushes.Red;
+        public static readonly Brush ChoosedElementBrush = Brushes.Green;
+        protected Brush ElemBrush { get; set; }
 
-        protected Element()
-        {
-            Flow = new Flow(0, 0, 0);
-            Id = Scheme.Count;
-            Scheme.Count++;
-        }
+        //private const double W = 50 * 1.5;
+        //private const double H = 25 * 1.5;
+        //private const double R = 5 * 1.5;
+        //private readonly SolidColorBrush _connectingEllipseBrush = Brushes.Black;
 
-        #region width, height, radius, color, selected
+        //protected Color ElemColor { get; set; }
+        //public bool Selected { get; set; }
 
-        protected double Width
-        {
-            get => W;
-        }
-
-        protected double Height
-        {
-            get => H;
-        }
-
-        protected double Radius
-        {
-            get => R;
-        }
-        protected Brush elemBrush { get; set; }
-        protected Color ElemColor { get; set; }
-
-        protected SolidColorBrush GetConnectingEllipseBrush()
-        {
-            return _connectingEllipseBrush;
-        }
-
-        public SolidColorBrush GetSelectedConnectingEllipseBrush()
-        {
-            return _selectedConnectingEllipseBrush;
-        }
-
-        public bool Selected { get; set; }
-
-        #endregion
 
         #region input, output
 
-        public Vertex OutElement // элемент к которому идет выход (эл-т со входом и номер его входа)
+        public Vertex OutElement // элемент к которому идет выход данного эл-та (эл-т со входом и номер его входа)
         {
             get;
             set;
@@ -93,6 +60,8 @@ namespace TestScheme.Schemes.Objects.Elements
 
         public List<Point> InputPoints { get; set; }
 
+        protected abstract void SetInputOutputPoints();
+
         #endregion
 
         #region locationPoint
@@ -102,18 +71,60 @@ namespace TestScheme.Schemes.Objects.Elements
         public Point LocationPoint
         {
             get => _locationPoint;
-            set => _locationPoint = value;
+            set
+            {
+                _locationPoint = value; 
+                SetInputOutputPoints();
+            }
         }
 
         #endregion
 
         #endregion
 
+        #region Constructors
+        protected Element()
+        {
+            Flow = new Flow(0, 0, 0,0);
+            Id = Scheme.SchemeElements.Count;
+            //Scheme.Count++;
+        }
+        protected Element(string[] parameters)
+        {
+            Flow = new Flow(0, 0, 0,0);
+
+            int.TryParse(parameters[1], out int id);
+            this.Id = id;
+
+            double.TryParse(parameters[2], out double x);
+            double.TryParse(parameters[3], out double y);
+            this.LocationPoint = new Point(x, y);
+        }
+        #endregion
+
         #region DataTables
 
-        public abstract DataTable CreateDataTableResults();
+        public DataTable CreateDataTableResults()
+        {
+            int count = 4;
+            string[] rowsParameter = new string[count];
+            double[] rowsValue = new double[count];
+
+            rowsParameter[0] = "Gн, м3/сут";
+            rowsParameter[1] = "Gв, м3/сут";
+            rowsParameter[2] = "T, C";
+            rowsParameter[3] = "p, атм.";
+
+            rowsValue[0] = Flow.Goil;
+            rowsValue[1] = Flow.Gwater;
+            rowsValue[2] = Flow.Tempreture;
+            rowsValue[3] = Flow.Pressure;
+
+            return CreateDataTable(rowsParameter, rowsValue);
+        }
         public abstract DataTable CreateDataTableProperties();
-        public abstract void SetPropertiesFromDataTable(DataTable dt);
+        //public abstract void SetPropertiesFromDataTable(DataTable dt);
+        public abstract void ChangePropertyByUser(double property, int row, int column);
 
         protected DataTable CreateDataTable(string[] rowsParameter, double[] rowsValue)
         {
@@ -142,63 +153,51 @@ namespace TestScheme.Schemes.Objects.Elements
 
         #region Draw
 
-        public void Draw(Canvas PaintSurface)
+        public void Draw(Canvas paintSurface)
         {
-            Rectangle rect = DrawRectangle(PaintSurface);
-            rect.Fill = this.elemBrush;
-            //rect.Fill = new SolidColorBrush(ElemColor);
-            DrawInOut(PaintSurface);
-
+            Rectangles rect = new Rectangles(this.ElemBrush, LocationPoint);
+            rect.Draw(paintSurface);
+            DrawInOut(paintSurface);
         }
 
-        public void DrawChoosedElem(Canvas PaintSurface)
+        public void DrawChoosedElem(Canvas paintSurface)
         {
-            Rectangle rect = DrawRectangle(PaintSurface);
-            rect.Stroke = Brushes.Green;
-            rect.StrokeThickness = 2;
-
+            Rectangles rect = new Rectangles(ChoosedElementBrush, LocationPoint);
+            rect.Draw(paintSurface);
         }
 
-        public void DrawConnections(Canvas PaintSurface)
+        public void DrawConnections(Canvas paintSurface)
         {
-            if (this.OutElement != null & this.OutPoint != default(Point))
+            if (this.OutElement != null && this.OutPoint != default(Point) && this.OutElement.elem.InputPoints.Count != 0)
             {
-                Lines.Draw(PaintSurface, this.OutPoint, this.OutElement.elem.InputPoints[this.OutElement.indexInList]);
+                Lines line = new Lines(this.OutPoint, this.OutElement.elem.InputPoints[this.OutElement.indexInList]);
+                line.Draw(paintSurface);
             }
         }
 
-        public abstract void DrawInOut(Canvas PaintSurface);
-
-        protected Rectangle DrawRectangle(Canvas PaintSurface)
+        public void DrawInOut(Canvas paintSurface)
         {
-            Rectangle rect = new Rectangle();
-            rect.Width = this.Width;
-            rect.Height = this.Height;
-            PaintSurface.Children.Add(rect);
-            Canvas.SetLeft(rect, this.LocationPoint.X);
-            Canvas.SetTop(rect, this.LocationPoint.Y);
-            return rect;
-        }
-
-        public Ellipse DrawEllipse(Canvas PaintSurface, Point location, SolidColorBrush brush)
-        {
-            Ellipse elps = new Ellipse();
-            elps.Width = this.Radius;
-            elps.Height = this.Radius;
-            elps.Fill = brush;
-            PaintSurface.Children.Add(elps);
-
-            Canvas.SetLeft(elps, location.X);
-            Canvas.SetTop(elps, location.Y);
-
-            return elps;
+            if (this.OutPoint != default(Point))
+            {
+                Ellipses elps = new Ellipses(this.OutPoint);
+                elps.Draw(paintSurface);
+            }
+            if (this.InputPoints != null)
+            {
+                Ellipses elps = new Ellipses();
+                foreach (Point pnt in this.InputPoints)
+                {
+                    elps.LocationPoint = pnt;
+                    elps.Draw(paintSurface);
+                }
+            }
         }
 
         #endregion
 
         #region CheckLocation
 
-        protected bool CheckPointBelongElement(Point locationPoint, Point checkingPoint, double dxRight, double dxLeft,
+        protected static bool CheckPointBelongElement(Point locationPoint, Point checkingPoint, double dxLeft, double dxRight,
             double dyTop, double dyBottom)
         {
             if (checkingPoint.X >= locationPoint.X - dxLeft &
@@ -212,18 +211,18 @@ namespace TestScheme.Schemes.Objects.Elements
 
         public bool CheckSelection(Point checkingPoint)
         {
-            if (CheckPointBelongElement(this.LocationPoint, checkingPoint, this.Width, 0, 0, this.Height))
-                return true;
-            else
-                return false;
+            double r = Shapes.Radius * 2;
+            return CheckPointBelongElement(this.LocationPoint, checkingPoint, - r, Shapes.Width - r, 0, Shapes.Height);
         }
 
         public bool CheckOutput(Point checkingPoint)
         {
+            double r = Shapes.Radius * 2;
+            double rOutside = Shapes.Radius * 3.5;
 
             if (this.OutPoint != default(Point)) // у эл-та предусмотрен выход
             {
-                if (CheckPointBelongElement(this.OutPoint, checkingPoint, this.Width, 0, 0, this.Height))
+                if (CheckPointBelongElement(this.OutPoint, checkingPoint, r, rOutside, rOutside, rOutside))
                     if (this.OutElement != null)
                     {
                         MessageBox.Show("У данного элемента уже есть выходное соединение");
@@ -242,16 +241,24 @@ namespace TestScheme.Schemes.Objects.Elements
 
         public virtual bool CheckInput(Point checkingPoint, out Vertex vertex)
         {
-            int deltaOutside = 10;
-            int deltaInside = 2;
+            double r = Shapes.Radius * 2;
+            double rOutside = Shapes.Radius * 3.5;
             if (this.InputPoints != null) // у эл-та предусмотрен вход (несколько)
             {
                 foreach (Point inPoint in this.InputPoints)
-                    if (CheckPointBelongElement(inPoint, checkingPoint, deltaInside * this.Radius, deltaOutside * this.Radius, deltaOutside * this.Radius,
-                        deltaOutside * this.Radius))
+                    if (CheckPointBelongElement(inPoint, checkingPoint, rOutside, r, rOutside, rOutside))
                     {
-                        vertex = new Vertex(this, this.InputPoints.IndexOf(inPoint));
-                        return true;
+                        int index = this.InputPoints.IndexOf(inPoint);
+                        if (this.InputElements.Count > index && this.InputElements[index] != null)
+                        {
+                            vertex = null;
+                            return false;
+                        }
+                        else
+                        {
+                            vertex = new Vertex(this, this.InputPoints.IndexOf(inPoint));
+                            return true;
+                        }
                     }
                 vertex = null;
                 return false;
@@ -265,6 +272,10 @@ namespace TestScheme.Schemes.Objects.Elements
 
         }
 
+        public static bool CheckLocationInCanvas(Canvas paintSurface, Point checkingPoint)
+        {
+            return CheckPointBelongElement(new Point(0, 0), checkingPoint, 0, paintSurface.ActualWidth, 0, paintSurface.ActualHeight);
+        }
 
 
         #endregion
@@ -273,8 +284,10 @@ namespace TestScheme.Schemes.Objects.Elements
 
         public void Drag(double dX, double dY)
         {
-            this._locationPoint.X = this._locationPoint.X + dX;
-            this._locationPoint.Y = this._locationPoint.Y + dY;
+            double x = this.LocationPoint.X;
+            double y = this.LocationPoint.Y;
+
+            LocationPoint = new Point(x + dX, y + dY);
         }
 
         #endregion
@@ -283,52 +296,54 @@ namespace TestScheme.Schemes.Objects.Elements
 
         public void RemoveElem()
         {
-            int indexInScheme = Scheme.SchemeElements.IndexOf(this);
+            int indexInScheme = this.Id;
             if (this.OutElement != null)
             {
                 int indexInInputsList = this.OutElement.indexInList;
-                if (Scheme.SchemeElements[indexInScheme].OutElement.elem.InputElements.Count >=
+                if (Scheme.SchemeElements[Id].OutElement.elem.InputElements.Count >=
                     indexInInputsList)
-                    Scheme.SchemeElements[indexInScheme].OutElement.elem.InputElements[indexInInputsList] =
-                        null;
+                    Scheme.SchemeElements[Id].OutElement.elem.InputElements[indexInInputsList] =  null;
             }
             if (this.InputElements != null)
             {
                 foreach (Element elem in this.InputElements)
                     elem.OutElement = null;
             }
-            Scheme.SchemeElements.Find(elem => elem == this).OutElement = null;
+            //Scheme.SchemeElements.Find(elem => elem == this).OutElement = null;
             Scheme.SchemeElements.Remove(this);
+
+            for (int i = indexInScheme; i < Scheme.SchemeElements.Count; i++)
+                Scheme.SchemeElements[i].Id = i;
         }
 
 
         #endregion
 
+        #region Calculate
         public abstract Flow Calculate();
+        #endregion
 
+        #region Save
+        public void SaveElementConnections(StreamWriter sw)
+        {
+            if (this.OutElement != null)
+            {
+                sw.WriteLine(this.Id + " " + this.OutElement.elem.Id + " " + this.OutElement.indexInList);
+            }
+        }
         public virtual void SaveElement(StreamWriter sw)
         {
-            sw.Write(this.Id + " ");
             sw.Write(this.GetType().Name + " ");
+            sw.Write(this.Id + " ");
+            
             sw.Write(this.LocationPoint.X + " ");
-            sw.Write(this.LocationPoint.Y + " ");
-            if (this.OutElement!= null)
-                sw.WriteLine(this.OutElement.elem.Id);
-            else
-                sw.WriteLine("");
-        }
-
-        public virtual void LoadElement(StreamReader sr)
-        {
-            //sw.Write(this.Id + " ");
-            //sw.Write(this.GetType().Name + " ");
-            //sw.Write(this.LocationPoint.X + " ");
-            //sw.Write(this.LocationPoint.Y + " ");
-            //if (this.OutElement != null)
+            sw.WriteLine(this.LocationPoint.Y);
+            //if (this.OutElement!= null)
             //    sw.WriteLine(this.OutElement.elem.Id);
             //else
             //    sw.WriteLine("");
         }
+        #endregion
 
     }
 }

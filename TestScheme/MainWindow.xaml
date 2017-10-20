@@ -25,7 +25,7 @@
             <MenuItem Header="Файл">
                 <MenuItem x:Name="MenuItemNew" Header="Создать" HorizontalContentAlignment="Center" Click="MenuItemNew_Click"></MenuItem>
                 <MenuItem x:Name="MenuItemSave" Header="Сохранить" HorizontalContentAlignment="Center" Click="MenuItemSave_Click"/>
-                <MenuItem x:Name="MenuItemLoad" Header="Открыть" HorizontalContentAlignment="Center"></MenuItem>
+                <MenuItem x:Name="MenuItemLoad" Header="Открыть" HorizontalContentAlignment="Center" Click="MenuItemLoad_Click"></MenuItem>
                 <Separator/>
                 <MenuItem x:Name="MenuItemExit" Header="Выход" HorizontalContentAlignment ="Center" Click="MenuItemExit_Click"></MenuItem>
             </MenuItem>
@@ -46,27 +46,35 @@
             </Grid.ColumnDefinitions>
 
             <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan ="2" Content="Панель элементов"  HorizontalContentAlignment="Center" Margin="0,1,0,9" Width="155" Height="31" VerticalContentAlignment="Center" FontWeight="Bold" Background="#FFF0F0F0"/>
-            <Rectangle Grid.Row="1" Grid.Column="0" Fill="#FF07C7FF" Margin="3,7,0,7" HorizontalAlignment="Left" Height="30"  VerticalAlignment="Top" Width="50"/>
-            <Button x:Name="btnSource" Content="Источник" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" BorderBrush="{x:Null}" Width="102" Margin="0,4,3,0" Click="btnSource_Click"/>
-            <Rectangle Grid.Row="2" Grid.Column="0"  HorizontalAlignment="Left" Height="20"  VerticalAlignment="Top" Width="47" Margin="3,5,0,0" >
+            <Rectangle Grid.Row="1" Grid.Column="0" Margin="8,6,0,0" HorizontalAlignment="Left" Height="20"  VerticalAlignment="Top" Width="40">
                 <Rectangle.Fill>
-                    <ImageBrush ImageSource="bin\Debug\pipe.jpg"/>
+                    <ImageBrush ImageSource="C:\Users\Yulia\source\repos\TestScheme\TestScheme\bin\Debug\source.png"/>
                 </Rectangle.Fill>
             </Rectangle>
-            <Button x:Name="btnPipe" Content="Труба" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="102" BorderBrush="{x:Null}" Margin="0,4,3,0" Click="btnPipe_Click"/>
-            <Rectangle Grid.Row="3" Grid.Column="0"  HorizontalAlignment="Left" Height="30"  VerticalAlignment="Top" Width="47" Margin="3,0,0,0">
+            <Button x:Name="btnSource" Content="Источник" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" BorderBrush="{x:Null}" Width="100" Margin="0,4,0,0" Click="btnSource_Click"/>
+            <Rectangle Grid.Row="2" Grid.Column="0"  HorizontalAlignment="Left" Height="20"  VerticalAlignment="Top" Width="40" Margin="6,5,0,0" >
                 <Rectangle.Fill>
-                    <ImageBrush ImageSource="bin\Debug\heat2.jpg"/>
+                    <ImageBrush ImageSource="C:\Users\Yulia\source\repos\TestScheme\TestScheme\bin\Debug\pipe.jpg"/>
                 </Rectangle.Fill>
             </Rectangle>
-            <Button x:Name="btnHeatExchanger" Content="Теплообменник" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="102" BorderBrush="{x:Null}" Margin="0,4,3,0" Click="btnHeatExchanger_Click"/>
-            <Rectangle Grid.Row="4" Grid.Column="0" Fill="#FFE3E4D1" Margin="3,7,0,7"  HorizontalAlignment="Left" Height="30"  VerticalAlignment="Top" Width="50"/>
-            <Button x:Name="btnFlowing" Content="Сток" Grid.Row="4" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="102" BorderBrush="{x:Null}" Margin="0,4,3,0" Click="btnFlowing_Click"/>
+            <Button x:Name="btnPipe" Content="Труба" Grid.Row="2" Grid.Column="1" VerticalAlignment="Top" BorderBrush="{x:Null}" Margin="0,4,0,0" Click="btnPipe_Click" HorizontalAlignment="Left" Width="100"/>
+            <Rectangle Grid.Row="3" Grid.Column="0"  HorizontalAlignment="Left" Height="26"  VerticalAlignment="Top" Width="46" Margin="3,2,0,0">
+                <Rectangle.Fill>
+                    <ImageBrush ImageSource="C:\Users\Yulia\source\repos\TestScheme\TestScheme\bin\Debug\heat2.jpg"/>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Button x:Name="btnHeatExchanger" Content="Теплообменник" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" BorderBrush="{x:Null}" Margin="0,3,0,0" Click="btnHeatExchanger_Click" Height="24"/>
+            <Rectangle Grid.Row="4" Grid.Column="0" Margin="8,6,0,0"  HorizontalAlignment="Left" Height="20"  VerticalAlignment="Top" Width="40">
+                <Rectangle.Fill>
+                    <ImageBrush ImageSource="C:\Users\Yulia\source\repos\TestScheme\TestScheme\bin\Debug\terminal.png"/>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Button x:Name="btnFlowing" Content="Сток" Grid.Row="4" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" BorderBrush="{x:Null}" Margin="0,4,0,0" Click="btnFlowing_Click"/>
 
         </Grid>
-        
+
         <Button x:Name="BtnCalculate" Grid.Row="1" Grid.Column="0" Content="Рассчитать" HorizontalAlignment="Left" Margin="10,205,0,0" VerticalAlignment="Top" Width="152" Height="32" Click="BtnCalculate_Click" Grid.ColumnSpan="2" />
-        
+
         <Canvas x:Name="PaintSurface" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" Margin="20,0,20,20" VerticalAlignment="Stretch" Background="White"
                 PreviewMouseMove="PaintSurface_PreviewMouseMove" PreviewMouseDown="PaintSurface_PreviewMouseDown" PreviewMouseUp="PaintSurface_PreviewMouseUp" Grid.RowSpan="2" />
 
@@ -86,7 +94,7 @@
             </Grid.ColumnDefinitions>
             <Label Content="Свойства элемента" Grid.Row="0" Grid.Column="0"  HorizontalContentAlignment="Center" VerticalAlignment="Top" Height="29" Margin="1,2,1,0" Width="184" Background="#FFF0F0F0" BorderBrush="DarkBlue" FontWeight="Bold" FontSize="11" VerticalContentAlignment="Center"/>
 
-            <DataGrid x:Name="DataGridProperties" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" Height="168" Width="186" Margin="0,2,0,0" VerticalAlignment="Top" ItemsSource="{Binding}" RowEditEnding="DataGridProperties_RowEditEnding" CellEditEnding="DataGridProperties_CellEditEnding">
+            <DataGrid x:Name="DataGridProperties" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" Height="168" Width="186" Margin="0,2,0,0" VerticalAlignment="Top" CanUserAddRows="False" CanUserDeleteRows="False" CanUserSortColumns="False" ItemsSource="{Binding}" CellEditEnding="DataGridProperties_CellEditEnding" >
 
                 <!--<DataGrid.Columns>
                     <DataGridTextColumn  Width="93"/>
@@ -94,17 +102,17 @@
                 </DataGrid.Columns>-->
             </DataGrid>
             <Label Content="Результаты расчета" Grid.Row="2" Grid.Column="0"  HorizontalContentAlignment="Center" VerticalAlignment="Top" Height="29" Margin="1,2,1,0" Width="184" Background="#FFF0F0F0" BorderBrush="DarkBlue" FontWeight="Bold" FontSize="11" VerticalContentAlignment="Center"/>
-            <DataGrid x:Name="DataGridResults" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Left" Height="168" Margin="0,2,0,0" VerticalAlignment="Top" Width="186" ItemsSource="{Binding}" >
+            <DataGrid x:Name="DataGridResults" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Left" Height="168" Margin="0,2,0,0" VerticalAlignment="Top" Width="186" CanUserAddRows="False" CanUserDeleteRows="False" CanUserSortColumns="False" IsReadOnly="True" ItemsSource="{Binding}" >
 
                 <!--<DataGrid.Columns>
                 <DataGridTextColumn  Width="93"/>
                 <DataGridComboBoxColumn  Width="93" />
             </DataGrid.Columns>-->
             </DataGrid>
-            
-            
+
+
         </Grid>
-        
+
 
     </Grid>
 </Window>

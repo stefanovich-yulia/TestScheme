@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using TestScheme.DrawingElements;
 
 namespace TestScheme.Schemes.Objects.Elements
 {
@@ -19,33 +20,47 @@ namespace TestScheme.Schemes.Objects.Elements
         #region конструктор
         public Pipe()
         {
-            ElemColor = Color.FromRgb(109, 110, 96);
-            elemBrush = new ImageBrush { ImageSource = new BitmapImage(new Uri(@"pipe.jpg", UriKind.Relative)) };
+            //ElemColor = Color.FromRgb(109, 110, 96);
+            ElemBrush = new ImageBrush { ImageSource = new BitmapImage(new Uri(@"pipe.jpg", UriKind.Relative)) };
+            InputElements = new List<Element>(1);
+        }
+        public Pipe(System.String[] parameters) : base(parameters)
+        {
+            double.TryParse(parameters[4], out double tmp);
+            this.Asperity = tmp;
+            double.TryParse(parameters[5], out tmp);
+            this.Length = tmp;
+            double.TryParse(parameters[6], out tmp);
+            this.Diameter = tmp;
 
-            InputPoints = new List<Point>();
+            //ElemColor = Color.FromRgb(109, 110, 96);
+            ElemBrush = new ImageBrush { ImageSource = new BitmapImage(new Uri(@"pipe.jpg", UriKind.Relative)) };
+
+            //InputPoints = new List<Point>();
             InputElements = new List<Element>(1);
         }
         #endregion
 
-        public override void DrawInOut(Canvas PaintSurface)
+        #region Draw
+
+        protected override void SetInputOutputPoints()
         {
-            double x = this.LocationPoint.X + this.Width - (double)Radius / 2;
-            double y = this.LocationPoint.Y + this.Height / 2 - (double)Radius / 2;
+            double x = this.LocationPoint.X + Shapes.Width - (double)Shapes.Radius / 2;
+            double y = this.LocationPoint.Y + Shapes.Height / 2 - (double)Shapes.Radius / 2;
             this.OutPoint = new Point(x, y);
 
-            this.InputPoints.Clear();
-            x = this.LocationPoint.X - (double)Radius / 2;
+            this.InputPoints = new List<Point>();
+            x = this.LocationPoint.X - (double)Shapes.Radius / 2;
             this.InputPoints.Add(new Point(x, y));
-
-            DrawEllipse(PaintSurface, this.OutPoint, GetConnectingEllipseBrush());
-            DrawEllipse(PaintSurface, this.InputPoints[0], GetConnectingEllipseBrush());
         }
+        #endregion
+
         #region DataTable
         public override DataTable CreateDataTableProperties()
         {
             string[] rowsParameter = new string[3];
             double[] rowsValue = new double[3];
-            rowsParameter[0] = "Шероховатость";
+            rowsParameter[0] = "Шероховатость, мкм"; 
             rowsParameter[1] = "Длина, м";
             rowsParameter[2] = "Диаметр, м";
             rowsValue[0] = Asperity;
@@ -54,64 +69,78 @@ namespace TestScheme.Schemes.Objects.Elements
 
             return CreateDataTable(rowsParameter, rowsValue); 
         }
-        public override DataTable CreateDataTableResults()
+        //public override DataTable CreateDataTableResults()
+        //{
+
+        //}
+
+        public override void ChangePropertyByUser(double property, int row, int column)
         {
-            string[] rowsParameter = new string[3];
-            double[] rowsValue = new double[3];
-            rowsParameter[0] = "Qн, м3/сут";
-            rowsParameter[1] = "Qв, м3/сут";
-            rowsParameter[2] = "T, C";
-            rowsValue[0] = Flow.Voil;
-            rowsValue[1] = Flow.Vwater;
-            rowsValue[2] = Flow.Tempreture;
+            if (column == 1)
+            {
+                switch (row)
+                {
+                    case 0:
+                        this.Asperity = property;
+                        break;
+                   case 1:
+                        this.Length = property;
+                        break;
+                    case 2:
+                        this.Diameter = property;
+                        break;
 
-            return CreateDataTable(rowsParameter, rowsValue); 
-
+                }
+            }
         }
+        //public override void SetPropertiesFromDataTable(DataTable dt)
+        //{
+        //    double.TryParse(dt.Rows[0][1].ToString(), out double tmpAsperity);
+        //    double.TryParse(dt.Rows[1][1].ToString(), out double tmpLength);
+        //    double.TryParse(dt.Rows[2][1].ToString(), out double tmpDiameter);
 
-        public override void SetPropertiesFromDataTable(DataTable dt)
-        {
-            double.TryParse(dt.Rows[0][1].ToString(), out double tmpAsperity);
-            double.TryParse(dt.Rows[1][1].ToString(), out double tmpLength);
-            double.TryParse(dt.Rows[2][1].ToString(), out double tmpDiameter);
-
-            this.Flow = new Flow(tmpAsperity, tmpLength, tmpDiameter);
-        }
+        //    this.Flow = new Flow(tmpAsperity, tmpLength, tmpDiameter);
+        //}
 
         #endregion
+
+        #region Calculate
         public override Flow Calculate()
         {
             if (this.InputElements.Count == 0)
-                return new Flow(0,0,0);
+                return new Flow();
             else
             {              
                 Flow childFlow = this.InputElements[0].Calculate();
-                double tmpVwater = childFlow.Vwater;
-                double tmpVoil = childFlow.Voil;
+                double tmpGwater = childFlow.Gwater;
+                double tmpGoil = childFlow.Goil;
                 double tmpTempreture = childFlow.Tempreture;
+                double tmpPressure = childFlow.Pressure;
 
-                tmpVwater = tmpVwater * 0.75;
-                tmpVoil = tmpVoil * 0.75;
+                tmpGwater = tmpGwater * 0.75;
+                tmpGoil = tmpGoil * 0.75;
 
-                this.Flow = new Flow(tmpVwater, tmpVoil, tmpTempreture);
+                this.Flow = new Flow(tmpGwater, tmpGoil, tmpTempreture, tmpPressure);
 
                 return this.Flow;
             }
         }
+        #endregion
 
         public override void SaveElement(StreamWriter sw)
         {
-            sw.Write(this.Id + " ");
             sw.Write(this.GetType().Name + " ");
+            sw.Write(this.Id + " ");
+           
             sw.Write(this.LocationPoint.X + " ");
             sw.Write(this.LocationPoint.Y + " ");
             sw.Write(this.Asperity + " ");
             sw.Write(this.Length + " ");
-            sw.Write(this.Diameter + " ");
-            if (this.OutElement != null)
-                sw.WriteLine(this.OutElement.elem.Id);
-            else
-                sw.WriteLine("");
+            sw.WriteLine(this.Diameter);
+            //if (this.OutElement != null)
+            //    sw.WriteLine(this.OutElement.elem.Id);
+            //else
+            //    sw.WriteLine("");
         }
 
 

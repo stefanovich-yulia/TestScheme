@@ -6,6 +6,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using TestScheme.DrawingElements;
 
 namespace TestScheme.Schemes.Objects.Elements
 {
@@ -15,95 +17,57 @@ namespace TestScheme.Schemes.Objects.Elements
         #region конструктор
         public HeatExchanger()
         {
-            ElemColor = Color.FromRgb(255, 15, 48);
-            elemBrush = new ImageBrush { ImageSource = new BitmapImage(new Uri(@"heat2.jpg", UriKind.Relative)) };
-            InputPoints = new List<Point>();
+            //ElemColor = Color.FromRgb(255, 15, 48);
+            ElemBrush = new ImageBrush { ImageSource = new BitmapImage(new Uri(@"heat2.jpg", UriKind.Relative)) };
+            InputElements = new List<Element>(2);
+        }
+
+        public HeatExchanger(System.String[] parameters) : base(parameters)
+        {
+           // ElemColor = Color.FromRgb(255, 15, 48);
+            ElemBrush = new ImageBrush { ImageSource = new BitmapImage(new Uri(@"heat2.jpg", UriKind.Relative)) };
+            //InputPoints = new List<Point>();
             InputElements = new List<Element>(2);
         }
 
         #endregion
 
-
-        public override void DrawInOut(Canvas PaintSurface)
+        #region CheckInput
+        protected override void SetInputOutputPoints()
         {
-            double x = LocationPoint.X + this.Width - Radius / 2;
-            double y = LocationPoint.Y + this.Height / 2 - Radius / 2;
+            double x = LocationPoint.X + Shapes.Width - Shapes.Radius / 2;
+            double y = LocationPoint.Y + Shapes.Height / 2 - Shapes.Radius / 2;
             this.OutPoint = new Point(x, y);
 
-            this.InputPoints.Clear();
-            x = LocationPoint.X - Radius / 2;
-            y = LocationPoint.Y + Radius;
+            this.InputPoints = new List<Point>();
+            x = LocationPoint.X - Shapes.Radius / 2;
+            y = LocationPoint.Y + Shapes.Radius;
             this.InputPoints.Add(new Point(x, y));
-            y = LocationPoint.Y + this.Height - 2 * Radius;
+            y = LocationPoint.Y + Shapes.Height - 2 * Shapes.Radius;
             this.InputPoints.Add(new Point(x, y));
-
-            DrawEllipse(PaintSurface, this.OutPoint, GetConnectingEllipseBrush());
-            DrawEllipse(PaintSurface, this.InputPoints[0], GetConnectingEllipseBrush());
-            DrawEllipse(PaintSurface, this.InputPoints[1], GetConnectingEllipseBrush());
-        }
-
-        #region DataTable
-        public override DataTable CreateDataTableProperties()
-        {
-            return null;
-        }
-        public override DataTable CreateDataTableResults()
-        {
-            string[] rowsParameter = new string[3];
-            double[] rowsValue = new double[3];
-            rowsParameter[0] = "Qн, м3/сут";
-            rowsParameter[1] = "Qв, м3/сут";
-            rowsParameter[2] = "T, C";
-            rowsValue[0] = Flow.Voil;
-            rowsValue[1] = Flow.Vwater;
-            rowsValue[2] = Flow.Tempreture;
-
-            return CreateDataTable(rowsParameter, rowsValue);
-
-        }
-        public override void SetPropertiesFromDataTable(DataTable dt) { }
-        #endregion
-
-        public override Flow Calculate()
-        {
-            if (this.InputElements.Count == 0)
-            {
-                return new Flow(0, 0, 0);
-            }
-            else
-            {
-                double tmpTempreture = 0, tmpVoil = 0, tmpVwater = 0; 
-                int countOfEmptyElem = 0;
-
-                foreach (Element elem in this.InputElements)
-                    if (elem.InputElements!= null && elem.InputElements.Count == 0)
-                        countOfEmptyElem++;
-                int n = this.InputElements.Count - countOfEmptyElem;
-
-                foreach (Element elem in this.InputElements)
-                {
-                    tmpTempreture += elem.Calculate().Tempreture / n;
-                    tmpVoil += elem.Calculate().Voil;
-                    tmpVwater += elem.Calculate().Vwater;
-                }
-
-                this.Flow = new Flow(tmpVwater, tmpVoil, tmpTempreture);
-                return this.Flow;
-            }
         }
 
         public override bool CheckInput(Point checkingPoint, out Vertex vertex)
         {
-            int deltaHorizontal = 3;
-            int deltaVertical = 1;
+            double r = Shapes.Radius * 2;
+            double rOutside = Shapes.Radius * 3.5;
+            double rVertical = Shapes.Radius * 1.5;
             if (this.InputPoints != null)
             {
                 foreach (Point inPoint in this.InputPoints)
-                    if (CheckPointBelongElement(inPoint, checkingPoint, deltaHorizontal * this.Radius, deltaHorizontal * this.Radius,
-                        deltaVertical * this.Radius, deltaVertical * this.Radius))
+                    if (CheckPointBelongElement(inPoint, checkingPoint, rOutside, r, rVertical, rVertical))
                     {
-                        vertex = new Vertex(this, this.InputPoints.IndexOf(inPoint));
-                        return true;
+                        int index = this.InputPoints.IndexOf(inPoint);
+                        if (this.InputElements.Count > index && this.InputElements[index] != null)
+                        {
+                            vertex = null;
+                            return false;
+                        }
+                        else
+                        {
+                            vertex = new Vertex(this, this.InputPoints.IndexOf(inPoint));
+                            return true;
+                        }
                     }
                 vertex = null;
                 return false;
@@ -116,5 +80,64 @@ namespace TestScheme.Schemes.Objects.Elements
             }
 
         }
+#endregion
+
+        #region DataTable
+        public override DataTable CreateDataTableProperties()
+        {
+            return null;
+        }
+        //public override DataTable CreateDataTableResults()
+        //{
+        //    string[] rowsParameter = new string[3];
+        //    double[] rowsValue = new double[3];
+        //    rowsParameter[0] = "Qн, м3/сут";
+        //    rowsParameter[1] = "Qв, м3/сут";
+        //    rowsParameter[2] = "T, C";
+        //    rowsValue[0] = Flow.Goil;
+        //    rowsValue[1] = Flow.Gwater;
+        //    rowsValue[2] = Flow.Tempreture;
+
+        //    return CreateDataTable(rowsParameter, rowsValue);
+
+        //}
+        public override void ChangePropertyByUser(double property, int row, int column) { }
+        //public override void SetPropertiesFromDataTable(DataTable dt) { }
+        #endregion
+
+        #region Calculate
+        public override Flow Calculate()
+        {
+            if (this.InputElements.Count == 0)
+            {
+                return new Flow();
+            }
+            else
+            {
+                double tempreture = 0, Goil = 0, Gwater = 0, pressure = double.MaxValue;
+
+                foreach (Element elem in this.InputElements)
+                {
+                    Flow tmpFlow = elem.Calculate();
+
+                    Goil += tmpFlow.Goil;
+                    Gwater += tmpFlow.Gwater;
+                    tempreture += tmpFlow.Tempreture * 
+                        (tmpFlow.Goil * Calculations.Coil * Calculations.DensityOil + 
+                        tmpFlow.Gwater * Calculations.Cwater * Calculations.DensityWater);
+
+                    pressure = Math.Min(pressure, tmpFlow.Pressure);
+                }
+
+                //double tmp = temp
+                tempreture = Math.Round(tempreture / 
+                    (Goil* Calculations.Coil * Calculations.DensityOil + Gwater * Calculations.Cwater * Calculations.DensityWater));
+
+                this.Flow = new Flow(Gwater, Goil, tempreture, pressure);
+                return this.Flow;
+            }
+        }
+        #endregion
+  
     }
 }

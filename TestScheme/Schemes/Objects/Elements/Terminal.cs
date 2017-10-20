@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using TestScheme.DrawingElements;
 
 namespace TestScheme.Schemes.Objects.Elements
 {
@@ -13,58 +16,66 @@ namespace TestScheme.Schemes.Objects.Elements
         #region конструктор
         public Terminal()
         {
-            ElemColor = Color.FromRgb(227, 228, 209);
-            elemBrush = new SolidColorBrush(ElemColor);
+            ElemBrush = new ImageBrush { ImageSource = new BitmapImage(new Uri(@"terminal.png", UriKind.Relative)) };
 
-            InputPoints = new List<Point>();
+            //InputPoints = new List<Point>();
+            InputElements = new List<Element>(1);
+        }
+        public Terminal(System.String[] parameters) : base(parameters)
+        {
+            //ElemColor = Color.FromRgb(227, 228, 209);
+            //ElemBrush = new SolidColorBrush(ElemColor);
+            ElemBrush = new ImageBrush { ImageSource = new BitmapImage(new Uri(@"terminal.png", UriKind.Relative)) };
+
+            //InputPoints = new List<Point>();
             InputElements = new List<Element>(1);
         }
 
         #endregion
 
-        public override void DrawInOut(Canvas PaintSurface)
+        #region Draw
+        protected override void SetInputOutputPoints()
         {
-            this.InputPoints.Clear();
-            double x = LocationPoint.X - Radius / 2;
-            double y = LocationPoint.Y + this.Height / 2 - Radius / 2;
+            this.InputPoints = new List<Point>();
+            double x = LocationPoint.X - Shapes.Radius / 2;
+            double y = LocationPoint.Y + Shapes.Height / 2 - Shapes.Radius / 2;
             this.InputPoints.Add(new Point(x, y));
-
-            DrawEllipse(PaintSurface, this.InputPoints[0], GetConnectingEllipseBrush());
         }
+        //public override void DrawInOut(Canvas paintSurface)
+        //{
+        //    //this.InputPoints.Clear();
+        //    //double x = LocationPoint.X - Shapes.Radius / 2;
+        //    //double y = LocationPoint.Y + Shapes.Height / 2 - Shapes.Radius / 2;
+        //    //this.InputPoints.Add(new Point(x, y));
+
+        //    Ellipses elps = new Ellipses(this.InputPoints[0]);
+        //    elps.Draw(paintSurface);
+        //    //DrawEllipse(paintSurface, this.InputPoints[0], GetConnectingEllipseBrush());
+        //}
         public override DataTable CreateDataTableProperties()
         {
             return null;
         }
-        
-        #region DataTable
-        public override DataTable CreateDataTableResults()
-        {
-            string[] rowsParameter = new string[3];
-            double[] rowsValue = new double[3];
-            rowsParameter[0] = "Qн, м3/сут";
-            rowsParameter[1] = "Qв, м3/сут";
-            rowsParameter[2] = "T, C";
-            rowsValue[0] = Flow.Voil;
-            rowsValue[1] = Flow.Vwater;
-            rowsValue[2] = Flow.Tempreture;
-
-            return CreateDataTable(rowsParameter, rowsValue);
-
-        }
-
-        public override void SetPropertiesFromDataTable(DataTable dt) { }
         #endregion
 
+        #region DataTable
+
+        public override void ChangePropertyByUser(double property, int row, int column) { }
+        //public override void SetPropertiesFromDataTable(DataTable dt) { }
+        #endregion
+
+        #region Calculate
         public override Flow Calculate()
         {
             if (this.InputElements.Count == 0)
-                return new Flow(0,0,0);
+                return new Flow();
             else
             {
                 this.Flow = this.InputElements[0].Calculate();
                 return this.Flow;
             }
         }
+        #endregion
 
     }
 }

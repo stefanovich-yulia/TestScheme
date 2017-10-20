@@ -10,7 +10,7 @@ using System.Windows.Shapes;
 using TestScheme.Schemes;
 using TestScheme.Schemes.Objects;
 using TestScheme.Schemes.Objects.Elements;
-
+using TestScheme.DrawingElements;
 namespace TestScheme
 {
     /// <summary>
@@ -31,10 +31,9 @@ namespace TestScheme
         public MainWindow()
         {
             InitializeComponent();
-            Scheme.SchemeElements = new List<Element>();
-            Scheme.Count = 0;
+            Init();
+            
         }
-
 
         #region Выбор элемента
         private void btnSource_Click(object sender, RoutedEventArgs e)
@@ -65,6 +64,7 @@ namespace TestScheme
         #endregion
 
         #region Проверка при нажатии на канву
+
         void CheckLocation(Point checkingPoint)
         {
             foreach (Element elem in Scheme.SchemeElements)
@@ -80,44 +80,46 @@ namespace TestScheme
                 }
                 else if (elem.CheckSelection(checkingPoint) & _tmpConnectionStart == null)
                 {
-                    if (_elemSelected == elem)
-                        _elemSelected = null;
-                    else
-                        _elemSelected = elem;
+                    if (!Element.CheckLocationInCanvas(PaintSurface, checkingPoint)) continue;
+                    _elemSelected = _elemSelected != elem ? elem : null;
                     break;
                 }
-
             }
+
         }
+
         #endregion
 
         #region Перерисовка
+
         void ReDraw()
         {
             PaintSurface.Children.Clear();
-
-
 
             foreach (Element elem in Scheme.SchemeElements)
             {
                 elem.Draw(PaintSurface);
                 elem.DrawConnections(PaintSurface);
             }
+            //foreach (Element elem in Scheme.SchemeElements)
+            //    elem.DrawConnections(PaintSurface);
 
-            if (_elemSelected != null)
-                _elemSelected.DrawChoosedElem(PaintSurface);
+
+            _elemSelected?.DrawChoosedElem(PaintSurface);
 
             if (_tmpConnectionStart != null)
             {
-                _tmpConnectionStart.DrawEllipse(PaintSurface, _tmpConnectionStart.OutPoint, _tmpConnectionStart.GetSelectedConnectingEllipseBrush());
+                Ellipses elps = new Ellipses(Element.SelectedConnectingEllipseBrush, _tmpConnectionStart.OutPoint);
+                elps.Draw(PaintSurface);
             }
             if (_tmpConnectionEnd != null)
             {
-                _tmpConnectionEnd.elem.DrawEllipse(PaintSurface, _tmpConnectionEnd.elem.InputPoints[_tmpConnectionEnd.indexInList], _tmpConnectionEnd.elem.GetSelectedConnectingEllipseBrush());
+                Ellipses elps = new Ellipses(Element.SelectedConnectingEllipseBrush, _tmpConnectionEnd.elem.InputPoints[_tmpConnectionEnd.indexInList]);
+                elps.Draw(PaintSurface);
             }
-
-
         }
+
+    
         #endregion
 
         #region Ввод с клавиатуры
@@ -176,44 +178,49 @@ namespace TestScheme
         {
             _mouseLocation = e.GetPosition(PaintSurface);
             CheckLocation(_mouseLocation);
+
             #region Отображение свойств
             if (_elemSelected != null)
                 FillingTables();
             else
                 ClearTables();
-
             #endregion
         }
 
         private void PaintSurface_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if ((_tmpConnectionStart != null) &  (e.LeftButton == MouseButtonState.Pressed))
-            {
-                Point pointStart = _tmpConnectionStart.OutPoint;
-                Point pointEnd = e.GetPosition(PaintSurface);
-                ReDraw();
-
-                Lines.Draw(PaintSurface, pointStart, pointEnd);
-
-                CheckLocation(e.GetPosition(PaintSurface));
-            }
-            if  ((_tmpConnectionStart!= null) & (e.LeftButton == MouseButtonState.Released))
-            {
-                if (_tmpConnectionEnd != null)
+            if (_tmpConnectionStart != null)
+                switch (e.LeftButton)
                 {
-                    int indexInScheme = Scheme.SchemeElements.IndexOf(_tmpConnectionEnd.elem);
-                    int indexInInputsList = _tmpConnectionEnd.indexInList;
-                    Element.CheckElemCountInList(Scheme.SchemeElements[indexInScheme].InputElements, indexInInputsList);
+                    case MouseButtonState.Pressed:
+                        _mouseLocation = e.GetPosition(PaintSurface);
+                        Point pointStart = _tmpConnectionStart.OutPoint;
+                        Point pointEnd = _mouseLocation;
+                        ReDraw();
+                        Lines line = new Lines(pointStart, pointEnd);
+                        line.Draw(PaintSurface);
 
-                    Scheme.SchemeElements[indexInScheme].InputElements[indexInInputsList] = _tmpConnectionStart;
-                    Scheme.SchemeElements.Find(elem => elem == _tmpConnectionStart).OutElement = _tmpConnectionEnd; // 
+                        CheckLocation(_mouseLocation);
+                        break;
+                    case MouseButtonState.Released:
+                        if (_tmpConnectionEnd != null)
+                        {
+                            int indexInScheme = _tmpConnectionEnd.elem.Id;
+                            int indexInInputsList = _tmpConnectionEnd.indexInList;
+                            Element.CheckElemCountInList(Scheme.SchemeElements[indexInScheme].InputElements,
+                                indexInInputsList);
+
+                            Scheme.SchemeElements[indexInScheme].InputElements[indexInInputsList] = _tmpConnectionStart;
+                            Scheme.SchemeElements.Find(elem => elem == _tmpConnectionStart).OutElement =
+                                _tmpConnectionEnd; 
+                        }
+                        _tmpConnectionStart = null;
+                        _tmpConnectionEnd = null;
+                        ReDraw();
+                        break;
                 }
-                _tmpConnectionStart = null;
-                _tmpConnectionEnd = null;
-                ReDraw();
-            }
 
-            if (_elemSelected != null & (e.LeftButton == MouseButtonState.Pressed))
+            if (e.LeftButton == MouseButtonState.Pressed && _elemSelected != null)
             {
                 double dx = e.GetPosition(PaintSurface).X - _mouseLocation.X;
                 double dy = e.GetPosition(PaintSurface).Y - _mouseLocation.Y;
@@ -221,21 +228,20 @@ namespace TestScheme
                 _elemSelected.Drag(dx, dy);
                 _mouseLocation = e.GetPosition(PaintSurface);
                 ReDraw();
-
             }
         }
         private void PaintSurface_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (_tmpConnectionEnd != null)
-            {
-                if (_tmpConnectionStart != null)
-                {
-                    // не вызывается
-                }
-                _tmpConnectionStart = null;
-                _tmpConnectionEnd = null;
-            }
-            if ( _newElement != null)
+            //if (_tmpConnectionEnd != null)
+            //{
+            //    if (_tmpConnectionStart != null)
+            //    {
+            //        // не вызывается
+            //    }
+            //    _tmpConnectionStart = null;
+            //    _tmpConnectionEnd = null;
+            //}
+            if (_newElement != null) // добавление нового элемента
             {
                 _newElement.LocationPoint = e.GetPosition(PaintSurface);
                 Scheme.SchemeElements.Add(_newElement);
@@ -248,6 +254,7 @@ namespace TestScheme
         }
         #endregion
 
+        #region Расчет
         private void BtnCalculate_Click(object sender, RoutedEventArgs e)
         {
             Calculations.CalculateSheme(Scheme.SchemeElements);
@@ -255,6 +262,8 @@ namespace TestScheme
             if (_elemSelected != null)
                 FillingTables();
         }
+        #endregion
+
         #region Tables
         private void FillingTables()
         {
@@ -284,51 +293,56 @@ namespace TestScheme
             DataGridResults.DataContext = null;
         }
 
-        public static DataTable DataViewAsDataTable(DataView dv)
+        private void DataGridProperties_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
-            DataTable dt = dv.Table.Clone();
-            foreach (DataRowView drv in dv)
-                dt.ImportRow(drv.Row);
-            return dt;
+            if (e.EditAction == DataGridEditAction.Commit)
+            {
+                //var column = e.Column as DataGridBoundColumn;
+                //if (column != null)
+                //{
+                //    var bindingPath = (column.Binding as Binding).Path.Path;
+                //    var el = e.EditingElement as TextBox;
+                //    MessageBox.Show(el.Text);
+
+                //}
+
+                double changedValue = double.NegativeInfinity;
+                int column = e.Column.DisplayIndex;
+                int row = e.Row.GetIndex();
+
+                if (e.EditingElement is TextBox changedCell)
+                    double.TryParse(changedCell.Text, out changedValue);
+                if (!double.IsNegativeInfinity(changedValue))
+                    _elemSelected.ChangePropertyByUser(changedValue, row, column);
+            }
         }
 
-        private void DataGridProperties_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e)
+
+        #endregion
+
+        #region Menu
+
+        private void MenuItemNew_Click(object sender, RoutedEventArgs e)
         {
-            //DataGrid dg = (DataGrid) sender;
-            //foreach (DataRowView dv in DataGridProperties.ItemsSource)
-            //{
-            //    MessageBox.Show(dv[1].ToString());
-            //}
+            Init();
+            ReDraw();
         }
-
-
+        private void MenuItemSave_Click(object sender, RoutedEventArgs e)
+        {
+            Scheme.Save();
+        }
+        private void MenuItemLoad_Click(object sender, RoutedEventArgs e)
+        {
+            Init();
+            Scheme.Load();
+            ReDraw();
+        }
         private void MenuItemExit_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
 
-
-        private void MenuItemSave_Click(object sender, RoutedEventArgs e)
-        {
-            Scheme.Save();
-        }
-
-        private void DataGridProperties_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
-        {
-            if (e.EditAction == DataGridEditAction.Commit)
-            {
-                var column = e.Column as DataGridBoundColumn;
-                if (column != null)
-                {
-                    var bindingPath = (column.Binding as Binding).Path.Path;
-                    var el = e.EditingElement as TextBox;
-                    MessageBox.Show(el.Text);
-
-                }
-            }
-        }
-
-        private void MenuItemNew_Click(object sender, RoutedEventArgs e)
+        private void Init()
         {
             Scheme.SchemeElements = new List<Element>();
 
@@ -336,71 +350,10 @@ namespace TestScheme
             _elemSelected = null;
             _tmpConnectionEnd = null;
             _tmpConnectionStart = null;
-
-            ReDraw();
+            //Scheme.Count = 0;
         }
-
-
         #endregion
 
-        //private void DataGridProperties_CellEditEnding(object sender, System.Windows.Controls.DataGridCellEditEndingEventArgs e)
-        //{
-        //    if (_elemSelected != null)
-        //    {
-        //        //var changedText = "";
-        //        //DataGrid dg = (DataGrid) sender;
-        //        //DataTable dt = DataViewAsDataTable((DataView)DataGridProperties.ItemsSource);
-        //        //var changedElement = e.EditingElement as TextBox;
-        //        //if (changedElement!= null)
-        //        //    changedText = changedElement.Text;
 
-
-        //        ////double.TryParse(txt.Text, out double val);
-        //        //dt.Rows[e.Row.GetIndex()].ItemArray[e.Column.DisplayIndex] = changedText;
-
-        //        //_elemSelected.SetPropertiesFromDataTable(dt);
-        //        //FillingTables();
-        //    }
-
-        //}
-
-        //private void DataGridProperties_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e)
-        //{
-        //    if (_elemSelected != null)
-        //    {
-        //        ////object s = e.EditAction;
-        //        ////DataTable dt = DataViewAsDataTable((DataView)DataGridProperties.ItemsSource);
-
-
-        //        ////_elemSelected.SetPropertiesFromDataTable(dt);
-        //        ////FillingTables();
-
-        //        ////DataGridProperties.CommitEdit(DataGridEditingUnit.Row, true);
-        //        //DataGrid grid = (DataGrid) sender;
-        //        //grid.CommitEdit(DataGridEditingUnit.Cell, true);
-
-        //        //DataTable dt = DataViewAsDataTable((DataView)DataGridProperties.ItemsSource);
-
-
-        //        //_elemSelected.SetPropertiesFromDataTable(dt);
-        //        //FillingTables();
-        //    }
-        //}
-
-        //private void DataGridProperties_CurrentCellChanged(object sender, EventArgs e)
-        //{
-        //    //DataGridProperties.CommitEdit();
-
-        //    //DataTable dt = DataViewAsDataTable((DataView)DataGridProperties.ItemsSource);
-
-
-        //    //_elemSelected.SetPropertiesFromDataTable(dt);
-        //    //FillingTables();
-        //}
-
-        //private void DataGridProperties_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
-        //{
-        //    DataGrid grid = (DataGrid)sender;
-        //}
     }
 }
