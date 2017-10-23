@@ -23,10 +23,10 @@ namespace TestScheme.Schemes
             {
                 sw.WriteLine(SchemeElements.Count);
                 foreach (Element elem in SchemeElements)
-                    elem.SaveElement(sw);
+                    elem.Save(sw);
 
                 foreach (Element elem in SchemeElements)
-                    elem.SaveElementConnections(sw);
+                    elem.SaveConnections(sw);
 
             }
 

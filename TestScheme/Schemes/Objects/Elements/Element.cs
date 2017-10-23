@@ -22,14 +22,6 @@ namespace TestScheme.Schemes.Objects.Elements
         public static readonly Brush ChoosedElementBrush = Brushes.Green;
         protected Brush ElemBrush { get; set; }
 
-        //private const double W = 50 * 1.5;
-        //private const double H = 25 * 1.5;
-        //private const double R = 5 * 1.5;
-        //private readonly SolidColorBrush _connectingEllipseBrush = Brushes.Black;
-
-        //protected Color ElemColor { get; set; }
-        //public bool Selected { get; set; }
-
 
         #region input, output
 
@@ -87,7 +79,6 @@ namespace TestScheme.Schemes.Objects.Elements
         {
             Flow = new Flow(0, 0, 0,0);
             Id = Scheme.SchemeElements.Count;
-            //Scheme.Count++;
         }
         protected Element(string[] parameters)
         {
@@ -123,7 +114,6 @@ namespace TestScheme.Schemes.Objects.Elements
             return CreateDataTable(rowsParameter, rowsValue);
         }
         public abstract DataTable CreateDataTableProperties();
-        //public abstract void SetPropertiesFromDataTable(DataTable dt);
         public abstract void ChangePropertyByUser(double property, int row, int column);
 
         protected DataTable CreateDataTable(string[] rowsParameter, double[] rowsValue)
@@ -324,14 +314,14 @@ namespace TestScheme.Schemes.Objects.Elements
         #endregion
 
         #region Save
-        public void SaveElementConnections(StreamWriter sw)
+        public void SaveConnections(StreamWriter sw)
         {
             if (this.OutElement != null)
             {
                 sw.WriteLine(this.Id + " " + this.OutElement.elem.Id + " " + this.OutElement.indexInList);
             }
         }
-        public virtual void SaveElement(StreamWriter sw)
+        public virtual void Save(StreamWriter sw)
         {
             sw.Write(this.GetType().Name + " ");
             sw.Write(this.Id + " ");

@@ -13,20 +13,17 @@ namespace TestScheme.Schemes.Objects.Elements
 {
     public class HeatExchanger : Element
     {
-        // св-ва
+
         #region конструктор
         public HeatExchanger()
         {
-            //ElemColor = Color.FromRgb(255, 15, 48);
             ElemBrush = new ImageBrush { ImageSource = new BitmapImage(new Uri(@"heat2.jpg", UriKind.Relative)) };
             InputElements = new List<Element>(2);
         }
 
         public HeatExchanger(System.String[] parameters) : base(parameters)
         {
-           // ElemColor = Color.FromRgb(255, 15, 48);
             ElemBrush = new ImageBrush { ImageSource = new BitmapImage(new Uri(@"heat2.jpg", UriKind.Relative)) };
-            //InputPoints = new List<Point>();
             InputElements = new List<Element>(2);
         }
 
@@ -35,8 +32,8 @@ namespace TestScheme.Schemes.Objects.Elements
         #region CheckInput
         protected override void SetInputOutputPoints()
         {
-            double x = LocationPoint.X + Shapes.Width - Shapes.Radius / 2;
-            double y = LocationPoint.Y + Shapes.Height / 2 - Shapes.Radius / 2;
+            double x = LocationPoint.X + Shapes.Width - Shapes.Radius/2;
+            double y = LocationPoint.Y + Shapes.Height / 2 - Shapes.Radius/2;
             this.OutPoint = new Point(x, y);
 
             this.InputPoints = new List<Point>();
@@ -87,22 +84,8 @@ namespace TestScheme.Schemes.Objects.Elements
         {
             return null;
         }
-        //public override DataTable CreateDataTableResults()
-        //{
-        //    string[] rowsParameter = new string[3];
-        //    double[] rowsValue = new double[3];
-        //    rowsParameter[0] = "Qн, м3/сут";
-        //    rowsParameter[1] = "Qв, м3/сут";
-        //    rowsParameter[2] = "T, C";
-        //    rowsValue[0] = Flow.Goil;
-        //    rowsValue[1] = Flow.Gwater;
-        //    rowsValue[2] = Flow.Tempreture;
 
-        //    return CreateDataTable(rowsParameter, rowsValue);
-
-        //}
         public override void ChangePropertyByUser(double property, int row, int column) { }
-        //public override void SetPropertiesFromDataTable(DataTable dt) { }
         #endregion
 
         #region Calculate
@@ -128,8 +111,7 @@ namespace TestScheme.Schemes.Objects.Elements
 
                     pressure = Math.Min(pressure, tmpFlow.Pressure);
                 }
-
-                //double tmp = temp
+                
                 tempreture = Math.Round(tempreture / 
                     (Goil* Calculations.Coil * Calculations.DensityOil + Gwater * Calculations.Cwater * Calculations.DensityWater));
 

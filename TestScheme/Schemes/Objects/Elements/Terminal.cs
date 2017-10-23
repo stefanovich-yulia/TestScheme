@@ -41,26 +41,17 @@ namespace TestScheme.Schemes.Objects.Elements
             double y = LocationPoint.Y + Shapes.Height / 2 - Shapes.Radius / 2;
             this.InputPoints.Add(new Point(x, y));
         }
-        //public override void DrawInOut(Canvas paintSurface)
-        //{
-        //    //this.InputPoints.Clear();
-        //    //double x = LocationPoint.X - Shapes.Radius / 2;
-        //    //double y = LocationPoint.Y + Shapes.Height / 2 - Shapes.Radius / 2;
-        //    //this.InputPoints.Add(new Point(x, y));
 
-        //    Ellipses elps = new Ellipses(this.InputPoints[0]);
-        //    elps.Draw(paintSurface);
-        //    //DrawEllipse(paintSurface, this.InputPoints[0], GetConnectingEllipseBrush());
-        //}
-        public override DataTable CreateDataTableProperties()
-        {
-            return null;
-        }
+
         #endregion
 
         #region DataTable
 
         public override void ChangePropertyByUser(double property, int row, int column) { }
+        public override DataTable CreateDataTableProperties()
+        {
+            return null;
+        }
         //public override void SetPropertiesFromDataTable(DataTable dt) { }
         #endregion
 

@@ -1,10 +1,6 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TestScheme.Schemes.Objects.Elements
 {
@@ -17,23 +13,21 @@ namespace TestScheme.Schemes.Objects.Elements
                 {"Pipe", typeof(Pipe)},
                 {"HeatExchanger", typeof(HeatExchanger)},
                 {"Terminal", typeof(Terminal)}
-
             };
 
 
         public static Element Create(string line)
         {
             string[] parameters = line.Split(' ');
-            object element = null;
+            Element element = null;
 
             if (ElementsTypesDictionary.TryGetValue(parameters[0],  out Type elemType))
             {
-                ConstructorInfo constructor = elemType.GetConstructor(new Type[1] { typeof(string[]) });
+                ConstructorInfo constructor = elemType.GetConstructor(new Type[] { typeof(string[]) });
                 if (constructor != null)
-                    element = constructor.Invoke(new object[1] {parameters});
+                    element = (Element)constructor.Invoke(new object[1] {parameters});
             }
-            return (Element)element;
-    }
-
+            return element;
+        }
     }
 }

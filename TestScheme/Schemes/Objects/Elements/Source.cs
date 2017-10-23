@@ -107,7 +107,7 @@ namespace TestScheme.Schemes.Objects.Elements
         //}
         #endregion
 
-        public override void SaveElement(StreamWriter sw)
+        public override void Save(StreamWriter sw)
         {
             sw.Write(this.GetType().Name + " ");
             sw.Write(this.Id + " ");

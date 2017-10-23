@@ -13,14 +13,13 @@ namespace TestScheme.Schemes.Objects.Elements
 {
     public class Pipe : Element
     {
-        // св-ва
+
         public double Asperity { get; set; }  // шероховатость
         public double Length { get; set; }
         public double Diameter { get; set; }
         #region конструктор
         public Pipe()
         {
-            //ElemColor = Color.FromRgb(109, 110, 96);
             ElemBrush = new ImageBrush { ImageSource = new BitmapImage(new Uri(@"pipe.jpg", UriKind.Relative)) };
             InputElements = new List<Element>(1);
         }
@@ -33,10 +32,7 @@ namespace TestScheme.Schemes.Objects.Elements
             double.TryParse(parameters[6], out tmp);
             this.Diameter = tmp;
 
-            //ElemColor = Color.FromRgb(109, 110, 96);
             ElemBrush = new ImageBrush { ImageSource = new BitmapImage(new Uri(@"pipe.jpg", UriKind.Relative)) };
-
-            //InputPoints = new List<Point>();
             InputElements = new List<Element>(1);
         }
         #endregion
@@ -50,7 +46,7 @@ namespace TestScheme.Schemes.Objects.Elements
             this.OutPoint = new Point(x, y);
 
             this.InputPoints = new List<Point>();
-            x = this.LocationPoint.X - (double)Shapes.Radius / 2;
+            x = this.LocationPoint.X - Shapes.Radius / 2;
             this.InputPoints.Add(new Point(x, y));
         }
         #endregion
@@ -69,10 +65,6 @@ namespace TestScheme.Schemes.Objects.Elements
 
             return CreateDataTable(rowsParameter, rowsValue); 
         }
-        //public override DataTable CreateDataTableResults()
-        //{
-
-        //}
 
         public override void ChangePropertyByUser(double property, int row, int column)
         {
@@ -93,14 +85,6 @@ namespace TestScheme.Schemes.Objects.Elements
                 }
             }
         }
-        //public override void SetPropertiesFromDataTable(DataTable dt)
-        //{
-        //    double.TryParse(dt.Rows[0][1].ToString(), out double tmpAsperity);
-        //    double.TryParse(dt.Rows[1][1].ToString(), out double tmpLength);
-        //    double.TryParse(dt.Rows[2][1].ToString(), out double tmpDiameter);
-
-        //    this.Flow = new Flow(tmpAsperity, tmpLength, tmpDiameter);
-        //}
 
         #endregion
 
@@ -127,7 +111,7 @@ namespace TestScheme.Schemes.Objects.Elements
         }
         #endregion
 
-        public override void SaveElement(StreamWriter sw)
+        public override void Save(StreamWriter sw)
         {
             sw.Write(this.GetType().Name + " ");
             sw.Write(this.Id + " ");
@@ -137,10 +121,6 @@ namespace TestScheme.Schemes.Objects.Elements
             sw.Write(this.Asperity + " ");
             sw.Write(this.Length + " ");
             sw.WriteLine(this.Diameter);
-            //if (this.OutElement != null)
-            //    sw.WriteLine(this.OutElement.elem.Id);
-            //else
-            //    sw.WriteLine("");
         }
 
 
